@@ -72,7 +72,12 @@
     <section id="booking" class="booking">
       <div class="container">
         <div class="section-head"><h2>Book Your Event</h2><p>Fill out the form below and our representative will get back to you shortly.</p></div>
-        <form class="booking-form" id="bookingForm">
+        <form class="booking-form" id="bookingForm" action="https://api.web3forms.com/submit" method="POST">
+          <input type="hidden" name="access_key" value="19366756-5a07-4a4c-b242-b3b00d2ccc83">
+          <input type="hidden" name="subject" value="New Photobooth Booking Request">
+          <input type="hidden" name="from_name" value="Aura Party Photobooth Website">
+          <input type="hidden" name="redirect" value="">
+          <input type="checkbox" name="botcheck" style="display:none">
           <div class="form-grid">
             <div class="form-group full"><label for="name">Name *</label><input id="name" name="name" type="text" autocomplete="name" required></div>
 <div class="form-group"><label for="phone">Phone Number *</label><input id="phone" name="phone" type="tel" autocomplete="tel" required></div>
@@ -93,13 +98,28 @@
 
   <footer class="footer">© 2026 Aura Party Photobooth inc. All rights reserved.</footer>
   <script>
-    document.getElementById('bookingForm').addEventListener('submit', function(e){
+    document.getElementById('bookingForm').addEventListener('submit', async function(e){
       e.preventDefault();
-      const data=new FormData(this);
-      const subject=encodeURIComponent('New Photobooth Booking Request');
-      const body=encodeURIComponent('New Booking Request\n\nName: '+data.get('name')+'\nPhone Number: '+data.get('phone')+'\nEmail: '+data.get('email')+'\nType of Event: '+data.get('eventType')+'\nDate of Event: '+data.get('eventDate')+'\nVenue Location: '+data.get('venue'));
-      window.location.href='mailto:aurapartyphotobooth@gmail.com?subject='+subject+'&body='+body;
-      document.getElementById('bookingSuccess').classList.add('show');
+      const form=this;
+      const button=form.querySelector('button[type="submit"]');
+      const success=document.getElementById('bookingSuccess');
+      button.disabled=true;
+      button.textContent='Sending...';
+      try {
+        const response=await fetch(form.action,{method:'POST',body:new FormData(form),headers:{'Accept':'application/json'}});
+        const result=await response.json();
+        if(response.ok && result.success){
+          success.classList.add('show');
+          form.reset();
+        } else {
+          throw new Error(result.message || 'Submission failed');
+        }
+      } catch(error) {
+        alert('Sorry, we could not submit your booking request. Please call 647-563-6520.');
+      } finally {
+        button.disabled=false;
+        button.textContent='Submit Booking Request';
+      }
     });
     function toggleMenu(){const n=document.getElementById('navLinks');const b=document.querySelector('.menu');n.classList.toggle('open');b.setAttribute('aria-expanded',n.classList.contains('open'));}
     document.querySelectorAll('#navLinks a').forEach(a=>a.addEventListener('click',()=>document.getElementById('navLinks').classList.remove('open')));
